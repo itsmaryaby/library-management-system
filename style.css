@@ -1,61 +1,35 @@
-// Backend: Node.js with Express and MongoDB
-// Install dependencies: npm install express mongoose cors body-parser
-
-const express = require("express");
-const mongoose = require("mongoose");
-const cors = require("cors");
-const bodyParser = require("body-parser");
-
-const app = express();
-app.use(cors());
-app.use(bodyParser.json());
-
-mongoose.connect("mongodb://localhost:27017/library", {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
-
-const bookSchema = new mongoose.Schema({
-  title: String,
-  author: String,
-  year: Number,
-  status: { type: String, default: "Available" },
-});
-
-const Book = mongoose.model("Book", bookSchema);
-
-app.get("/books", async (req, res) => {
-  const books = await Book.find();
-  res.json(books);
-});
-
-app.post("/addBook", async (req, res) => {
-  const newBook = new Book(req.body);
-  await newBook.save();
-  res.json(newBook);
-});
-
-app.put("/updateStatus/:id", async (req, res) => {
-  const updatedBook = await Book.findByIdAndUpdate(req.params.id, req.body, { new: true });
-  res.json(updatedBook);
-});
-
-// Add sample books if collection is empty
-async function addSampleBooks() {
-  const count = await Book.countDocuments();
-  if (count === 0) {
-    await Book.insertMany([
-      { title: "The Great Gatsby", author: "F. Scott Fitzgerald", year: 1925 },
-      { title: "To Kill a Mockingbird", author: "Harper Lee", year: 1960 },
-      { title: "1984", author: "George Orwell", year: 1949 },
-      { title: "Pride and Prejudice", author: "Jane Austen", year: 1813 },
-      { title: "The Catcher in the Rye", author: "J.D. Salinger", year: 1951 }
-    ]);
-    console.log("Sample books added to the database.");
-  }
+async function fetchBooks() {
+    const books = [
+        { _id: 1, title: "The Great Gatsby", author: "F. Scott Fitzgerald", year: 1925, status: "Available" },
+        { _id: 2, title: "To Kill a Mockingbird", author: "Harper Lee", year: 1960, status: "Available" },
+        { _id: 3, title: "1984", author: "George Orwell", year: 1949, status: "Available" },
+        { _id: 4, title: "Pride and Prejudice", author: "Jane Austen", year: 1813, status: "Available" },
+        { _id: 5, title: "The Catcher in the Rye", author: "J.D. Salinger", year: 1951, status: "Available" }
+    ];
+    displayBooks(books);
 }
 
-addSampleBooks();
+function displayBooks(books) {
+    document.getElementById("books").innerHTML = books.map(book => `
+        <div>
+            <h3>${book.title}</h3>
+            <p>Author: ${book.author}</p>
+            <p>Year: ${book.year}</p>
+            <p>Status: ${book.status}</p>
+        </div>
+    `).join('');
+}
 
-app.listen(5000, () => console.log("Server running on port 5000"));
+function addBook() {
+    const title = document.getElementById("title").value;
+    const author = document.getElementById("author").value;
+    const year = document.getElementById("year").value;
+    const newBook = { _id: Date.now(), title, author, year, status: "Available" };
+    books.push(newBook);
+    displayBooks(books);
+}
+
+const books = [];
+fetchBooks();
+
 
