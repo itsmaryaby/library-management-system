@@ -1,41 +1,50 @@
+let books = [
+    { id: 1, title: "The Great Gatsby", author: "F. Scott Fitzgerald", year: 1925, status: "Available" },
+    { id: 2, title: "1984", author: "George Orwell", year: 1949, status: "Available" },
+    { id: 3, title: "To Kill a Mockingbird", author: "Harper Lee", year: 1960, status: "Available" },
+    { id: 4, title: "Pride and Prejudice", author: "Jane Austen", year: 1813, status: "Available" },
+    { id: 5, title: "The Catcher in the Rye", author: "J.D. Salinger", year: 1951, status: "Available" }
+];
 
-async function fetchBooks() {
-    let response = await fetch("http://localhost:5000/books");
-    let books = await response.json();
-    document.getElementById("books").innerHTML = books.map(book => `
-        <div>
+function displayBooks() {
+    const booksDiv = document.getElementById("books");
+    booksDiv.innerHTML = "";
+
+    books.forEach(book => {
+        const bookCard = document.createElement("div");
+        bookCard.innerHTML = `
             <h3>${book.title}</h3>
-            <p>Author: ${book.author}</p>
-            <p>Year: ${book.year}</p>
-            <p>Status: ${book.status}</p>
-            <button onclick="borrowBook('${book._id}')">Borrow</button>
-            <button onclick="returnBook('${book._id}')">Return</button>
-        </div>
-    `).join('');
-}
-
-async function addBook() {
-    let title = document.getElementById("title").value;
-    let author = document.getElementById("author").value;
-    let year = document.getElementById("year").value;
-    await fetch("http://localhost:5000/addBook", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, author, year })
+            <p><strong>Author:</strong> ${book.author}</p>
+            <p><strong>Year:</strong> ${book.year}</p>
+            <p><strong>Status:</strong> ${book.status}</p>
+        `;
+        booksDiv.appendChild(bookCard);
     });
-    fetchBooks();
 }
 
-async function updateStatus(id, status) {
-    await fetch(`http://localhost:5000/updateStatus/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status })
-    });
-    fetchBooks();
+function addBook() {
+    const title = document.getElementById("title").value;
+    const author = document.getElementById("author").value;
+    const year = parseInt(document.getElementById("year").value);
+
+    if (title && author && year) {
+        const newBook = {
+            id: Date.now(),
+            title,
+            author,
+            year,
+            status: "Available"
+        };
+        books.push(newBook);
+        displayBooks();
+
+        // Clear inputs
+        document.getElementById("title").value = "";
+        document.getElementById("author").value = "";
+        document.getElementById("year").value = "";
+    }
 }
 
-async function borrowBook(id) { updateStatus(id, "Borrowed"); }
-async function returnBook(id) { updateStatus(id, "Available"); }
+// Show books when page loads
+window.onload = displayBooks;
 
-fetchBooks();
